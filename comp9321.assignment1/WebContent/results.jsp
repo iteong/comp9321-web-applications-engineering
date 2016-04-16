@@ -2,7 +2,28 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ page import="edu.unsw.comp9321.*, java.util.*" %>
+<%
+	// initialize session
+	
+	// get the beans from importing edu.unsw.comp9321.*
+	CartBean cartBean;
+	SongBean songBean;
+	AlbumBean albumBean;
+	
+	// check the session status to see if session has been initialized and shopping cart activated
+	if (session.getAttribute("shopping") == null) {
+		cartBean = new CartBean();
+		songBean = new SongBean();
+		albumBean = new AlbumBean();
+		session.setAttribute("shopping", cartBean);
+		session.setAttribute("songBean", songBean);
+		session.setAttribute("albumBean", albumBean);
+		System.out.println("results.jsp: Creating New Session.");
+	} else {
+		System.out.println("results.jsp: Already In Session.");
+	}
+%>
 
 <html>
 <head>
@@ -156,6 +177,7 @@
     };
 </script>
 
+
 <!-- If user did not enter anything in search bar -->
 <c:if test="${empty param.content}">
 	<p align="center" />
@@ -174,399 +196,458 @@
 </c:if>
 
 
-<!-- If user entered something in search bar and a substring of that is found in both song and album lists -->
-<!-- Since a song is part of an album, we do not need to account for situations where an album is found but not a song
-and vice versa -->
-<c:if test="${param.options == 'Anything' && not empty searchresultsSongs && not empty searchresultsAlbums}">
+<!-- Add to Shopping Cart (entire tables containing parsed data inside this doPost form for data to sent to servlet for processing -->
+<div align="center">
+	<!-- post action to go to doPost method of ControllerServlet -->		
+	<form method="post" action="search">
 
-<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You searched for: "<%=content%>"</H2>
-<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You filtered by "<%=options%>"</H2>
+		<!-- If user entered something in search bar and a substring of that is found in both song and album lists -->
+		<!-- Since a song is part of an album, we do not need to account for situations where an album is found but not a song
+		and vice versa -->
+		<c:if test="${param.options == 'Anything' && not empty searchresultsSongs && not empty searchresultsAlbums}">
+		
+		<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You searched for: "<%=content%>"</H2>
+		<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You filtered by "<%=options%>"</H2>
+		
+			<div class="CSSTableGenerator">
+			<h4>List of Song(s) Found:</h4>
+			   <table>
+			   <tr>
+			   		<th>
+			   			Song Title
+			   		</th>
+			   		<th>
+			   			Song Artist
+			   		</th>
+			   		
+			   		<th>
+			   			Album Title
+			   		</th>
+			   		<th>
+			   			Genre
+			   		</th>
+			   		<th>
+			   			Publisher
+			   		</th>
+			   		<th>
+			   			Year
+			   		</th>
+			   		<th>
+			   			Price
+			   		</th>
+			   		<th>
+			   			Select
+			   		</th>
+			   	</tr>
+			   	
+			   	<c:forEach var="song" items="${searchresultsSongs}">
+			   	<c:forEach var="album" items="${searchresultsAlbums}">
+			   	<tr>
+			   		<td>
+			   			${song.title}
+			   		</td>
+			   		<td>
+			   			${song.artist}
+			   		</td>
+			   		<td>
+			   		<c:if test="${song.albumID == album.ID}">
+			   			${album.title}
+			   		</c:if>
+			   		</td>
+			   		<td>
+			   		<c:if test="${song.albumID == album.ID}">
+			   			${album.genre}
+			   		</c:if>
+			   		</td>
+			   		<td>
+			   		<c:if test="${song.albumID == album.ID}">
+			   			${album.publisher}
+			   		</c:if>
+			   		</td>
+			   		<td>
+			   		<c:if test="${song.albumID == album.ID}">
+			   			${album.year}
+			   		</c:if>
+			   		</td>
+			   		<td>
+			   			${song.price}
+			   		</td>
+			   		<td>
+			   			<input type="checkbox" name="checkbox-anything-songs" value="${song.songID}" />&nbsp;
+			   		</td>
+			   	</tr>			
+			   	</c:forEach></c:forEach>
+			
+			   </table>
+		
+			<p></p>
+			
+			<h4>List of Album(s) Found:</h4>
+			   <table>
+			   <tr>
+			   		<th>
+			   			Album Title
+			   		</th>
+			   		<th>
+			   			Album Artist
+			   		</th>
+			   		<th>
+			   			Genre
+			   		</th>
+			   		<th>
+			   			Publisher
+			   		</th>
+			   		<th>
+			   			Year
+			   		</th>
+			   		<th>
+			   			Price
+			   		</th>
+			   		<th>
+			   			Select
+			   		</th>
+			   	</tr>
+			   	
+			   	<c:forEach var="album" items="${searchresultsAlbums}">
+			   	<tr>
+			   		<td>
+			   			${album.title}
+			   		</td>
+			   		<td>
+			   			${album.artist}
+			   		</td>
+			   		<td>
+			   			${album.genre}
+			   		</td>
+			   		<td>
+			   			${album.publisher}
+			   		</td>
+			   		<td>
+			   			${album.year}
+			   		</td>
+			   		<td>
+			   			${album.price}
+			   		</td>
+			   		<td>
+			   			<input type="checkbox" name="checkbox-anything-albums" />&nbsp;
+			   		</td>
+			   	</tr>			
+			   	</c:forEach>
+			
+			   </table>
+			     
+			</div>
+		<p></p>
+		</c:if>
+		
+		
+		
+		<!-- If user entered something in search bar and a substring of that is found in both song and album lists -->
+		<!-- Since a song is part of an album, we do not need to account for situations where an album is found but not a song
+		and vice versa -->
+		<c:if test="${param.options == 'Artist' && not empty searchresultsSongs && not empty searchresultsAlbums}">
+		
+		<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You searched for: "<%=content%>"</H2>
+		<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You filtered by "<%=options%>"</H2>
+		
+			<div class="CSSTableGenerator">
+			<h4>List of Song(s) Found:</h4>
+			   <table>
+			   <tr>
+			   		<th>
+			   			Song Title
+			   		</th>
+			   		<th>
+			   			Song Artist
+			   		</th>
+			   		
+			   		<th>
+			   			Album Title
+			   		</th>
+			   		<th>
+			   			Genre
+			   		</th>
+			   		<th>
+			   			Publisher
+			   		</th>
+			   		<th>
+			   			Year
+			   		</th>
+			   		<th>
+			   			Price
+			   		</th>
+			   		<th>
+			   			Select
+			   		</th>
+			   	</tr>
+			   	
+			   	<c:forEach var="song" items="${searchresultsSongs}">
+			   	<c:forEach var="album" items="${searchresultsAlbums}">
+			   	<tr>
+			   		<td>
+			   			${song.title}
+			   		</td>
+			   		<td>
+			   			${song.artist}
+			   		</td>
+			   		<td>
+			   		<c:if test="${song.albumID == album.ID}">
+			   			${album.title}
+			   		</c:if>
+			   		</td>
+			   		<td>
+			   		<c:if test="${song.albumID == album.ID}">
+			   			${album.genre}
+			   		</c:if>
+			   		</td>
+			   		<td>
+			   		<c:if test="${song.albumID == album.ID}">
+			   			${album.publisher}
+			   		</c:if>
+			   		</td>
+			   		<td>
+			   		<c:if test="${song.albumID == album.ID}">
+			   			${album.year}
+			   		</c:if>
+			   		</td>
+			   		<td>
+			   			${song.price}
+			   		</td>
+			   		<td>
+			   			<input type="checkbox" name="checkbox-artist-songs" />&nbsp;
+			   		</td>
+			   	</tr>			
+			   	</c:forEach></c:forEach>
+			
+			   </table>
+		
+			<p></p>
+			
+			<h4>List of Album(s) Found:</h4>
+			   <table>
+			   <tr>
+			   		<th>
+			   			Album Title
+			   		</th>
+			   		<th>
+			   			Album Artist
+			   		</th>
+			   		<th>
+			   			Genre
+			   		</th>
+			   		<th>
+			   			Publisher
+			   		</th>
+			   		<th>
+			   			Year
+			   		</th>
+			   		<th>
+			   			Price
+			   		</th>
+			   		<th>
+			   			Select
+			   		</th>
+			   	</tr>
+			   	
+			   	<c:forEach var="album" items="${searchresultsAlbums}">
+			   	<tr>
+			   		<td>
+			   			${album.title}
+			   		</td>
+			   		<td>
+			   			${album.artist}
+			   		</td>
+			   		<td>
+			   			${album.genre}
+			   		</td>
+			   		<td>
+			   			${album.publisher}
+			   		</td>
+			   		<td>
+			   			${album.year}
+			   		</td>
+			   		<td>
+			   			${album.price}
+			   		</td>
+			   		<td>
+			   			<input type="checkbox" name="checkbox-artist-albums" />&nbsp;
+			   		</td>
+			   	</tr>			
+			   	</c:forEach>
+			
+			   </table>
+			     
+			</div>
+		<p></p>
+		</c:if>
+		
+		
+		
+		<c:if test="${param.options == 'Songs' && not empty searchresultsSongs && not empty searchresultsAlbums}">
+		
+		<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You searched for: "<%=content%>"</H2>
+		<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You filtered by "<%=options%>"</H2>
+		
+			<div class="CSSTableGenerator">
+			<h4>List of Song(s) Found:</h4>
+			   	   <table>
+			   <tr>
+			   		<th>
+			   			Song Title
+			   		</th>
+			   		<th>
+			   			Song Artist
+			   		</th>
+			   		
+			   		<th>
+			   			Album Title
+			   		</th>
+			   		<th>
+			   			Genre
+			   		</th>
+			   		<th>
+			   			Publisher
+			   		</th>
+			   		<th>
+			   			Year
+			   		</th>
+			   		<th>
+			   			Price
+			   		</th>
+			   		<th>
+			   			Select
+			   		</th>
+			   	</tr>
+			   	
+			   	<c:forEach var="song" items="${searchresultsSongs}">
+			   	<!-- Find the album with albumID that matches the random song's ID -->
+			   	<c:forEach var="album" items="${searchresultsAlbums}">
+			   		<c:if test="${song.albumID == album.ID}">
+			   			<c:set var="searchedsongalbum" value="${album}" />
+			   		</c:if>
+			   	</c:forEach>
+			   	<tr>
+			   		<td>
+			   			${song.title}
+			   		</td>
+			   		<td>
+			   			${song.artist}
+			   		</td>
+			   		<td>
+			   		
+			   			${searchedsongalbum.title}
+			   		
+			   		</td>
+			   		<td>
+			   		
+			   			${searchedsongalbum.genre}
+			   		
+			   		</td>
+			   		<td>
+			   		
+			   			${searchedsongalbum.publisher}
+			   		
+			   		</td>
+			   		<td>
+			   		
+			   			${searchedsongalbum.year}
+			   		
+			   		</td>
+			   		<td>
+			   			${song.price}
+			   		</td>
+			   		<td>
+			   			<input type="checkbox" name="checkbox-songs-songs" />&nbsp;
+			   		</td>
+			   	</tr>			
+			   	</c:forEach>
+			
+			   </table>
+			   
+			   
+			</div>
+		</c:if>
+		
+		<c:if test="${param.options == 'Album' && not empty searchresults}">
+		
+		<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You searched for: "<%=content%>"</H2>
+		<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You filtered by "<%=options%>"</H2>
+		
+			<div class="CSSTableGenerator">
+			<h4>List of Album(s) Found:</h4>
+			   <table>
+			   <tr>
+			   		<th>
+			   			Album Title
+			   		</th>
+			   		<th>
+			   			Album Artist
+			   		</th>
+			   		<th>
+			   			Genre
+			   		</th>
+			   		<th>
+			   			Publisher
+			   		</th>
+			   		<th>
+			   			Year
+			   		</th>
+			   		<th>
+			   			Price
+			   		</th>
+			   		<th>
+			   			Select
+			   		</th>
+			   	</tr>
+			   	
+			   	<c:forEach var="album" items="${searchresults}">
+			   	<tr>
+			   		<td>
+			   			${album.title}
+			   		</td>
+			   		<td>
+			   			${album.artist}
+			   		</td>
+			   		<td>
+			   			${album.genre}
+			   		</td>
+			   		<td>
+			   			${album.publisher}
+			   		</td>
+			   		<td>
+			   			${album.year}
+			   		</td>
+			   		<td>
+			   			${album.price}
+			   		</td>
+			   		<td>
+			   			<input type="checkbox" name="checkbox-album-albums" />&nbsp;
+			   		</td>
+			   	</tr>			
+			   	</c:forEach>
+			
+			   </table>
+			   
+			</div>
+		</c:if>
 
-	<div class="CSSTableGenerator">
-	<h4>List of Song(s) Found:</h4>
-	   <table>
-	   <tr>
-	   		<th>
-	   			Song Title
-	   		</th>
-	   		<th>
-	   			Song Artist
-	   		</th>
-	   		
-	   		<th>
-	   			Album Title
-	   		</th>
-	   		<th>
-	   			Genre
-	   		</th>
-	   		<th>
-	   			Publisher
-	   		</th>
-	   		<th>
-	   			Year
-	   		</th>
-	   		<th>
-	   			Price
-	   		</th>
-	   	</tr>
-	   	
-	   	<c:forEach var="song" items="${searchresultsSongs}">
-	   	<c:forEach var="album" items="${searchresultsAlbums}">
-	   	<tr>
-	   		<td>
-	   			${song.title}
-	   		</td>
-	   		<td>
-	   			${song.artist}
-	   		</td>
-	   		<td>
-	   		<c:if test="${song.albumID == album.ID}">
-	   			${album.title}
-	   		</c:if>
-	   		</td>
-	   		<td>
-	   		<c:if test="${song.albumID == album.ID}">
-	   			${album.genre}
-	   		</c:if>
-	   		</td>
-	   		<td>
-	   		<c:if test="${song.albumID == album.ID}">
-	   			${album.publisher}
-	   		</c:if>
-	   		</td>
-	   		<td>
-	   		<c:if test="${song.albumID == album.ID}">
-	   			${album.year}
-	   		</c:if>
-	   		</td>
-	   		<td>
-	   			${song.price}
-	   		</td>
-	   	</tr>			
-	   	</c:forEach></c:forEach>
-	
-	   </table>
+		<input type="image" name="addbutton" src="./add-cart.png"></input>
+		<!-- hidden input tag to identify this form action as add to cart -->
+		<input type="hidden" name="action" value="add"></input>
+	</form>
+</div>
+<!-- End of doPost form for adding to cart, button is located at the bottom before view cart button -->
 
-	<p></p>
-	
-	<h4>List of Album(s) Found:</h4>
-	   <table>
-	   <tr>
-	   		<th>
-	   			Album Title
-	   		</th>
-	   		<th>
-	   			Album Artist
-	   		</th>
-	   		<th>
-	   			Genre
-	   		</th>
-	   		<th>
-	   			Publisher
-	   		</th>
-	   		<th>
-	   			Year
-	   		</th>
-	   		<th>
-	   			Price
-	   		</th>
-	   	</tr>
-	   	
-	   	<c:forEach var="album" items="${searchresultsAlbums}">
-	   	<tr>
-	   		<td>
-	   			${album.title}
-	   		</td>
-	   		<td>
-	   			${album.artist}
-	   		</td>
-	   		<td>
-	   			${album.genre}
-	   		</td>
-	   		<td>
-	   			${album.publisher}
-	   		</td>
-	   		<td>
-	   			${album.year}
-	   		</td>
-	   		<td>
-	   			${album.price}
-	   		</td>
-	   	</tr>			
-	   	</c:forEach>
-	
-	   </table>
-	     
-	</div>
-<p></p>
-</c:if>
+<!-- View Shopping Cart -->
+<div align="center">
+	<!-- post action to go to doPost method of ControllerServlet -->
+	<form method="post" action="search">
+		<input type="image" name="cartbutton" src="./view-cart.png"></input>
+		<!-- hidden input tag to identify this form action as cart -->
+		<input type="hidden" name="action" value="cart"></input>
+	</form>
+</div>
 
-
-
-<!-- If user entered something in search bar and a substring of that is found in both song and album lists -->
-<!-- Since a song is part of an album, we do not need to account for situations where an album is found but not a song
-and vice versa -->
-<c:if test="${param.options == 'Artist' && not empty searchresultsSongs && not empty searchresultsAlbums}">
-
-<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You searched for: "<%=content%>"</H2>
-<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You filtered by "<%=options%>"</H2>
-
-	<div class="CSSTableGenerator">
-	<h4>List of Song(s) Found:</h4>
-	   <table>
-	   <tr>
-	   		<th>
-	   			Song Title
-	   		</th>
-	   		<th>
-	   			Song Artist
-	   		</th>
-	   		
-	   		<th>
-	   			Album Title
-	   		</th>
-	   		<th>
-	   			Genre
-	   		</th>
-	   		<th>
-	   			Publisher
-	   		</th>
-	   		<th>
-	   			Year
-	   		</th>
-	   		<th>
-	   			Price
-	   		</th>
-	   	</tr>
-	   	
-	   	<c:forEach var="song" items="${searchresultsSongs}">
-	   	<c:forEach var="album" items="${searchresultsAlbums}">
-	   	<tr>
-	   		<td>
-	   			${song.title}
-	   		</td>
-	   		<td>
-	   			${song.artist}
-	   		</td>
-	   		<td>
-	   		<c:if test="${song.albumID == album.ID}">
-	   			${album.title}
-	   		</c:if>
-	   		</td>
-	   		<td>
-	   		<c:if test="${song.albumID == album.ID}">
-	   			${album.genre}
-	   		</c:if>
-	   		</td>
-	   		<td>
-	   		<c:if test="${song.albumID == album.ID}">
-	   			${album.publisher}
-	   		</c:if>
-	   		</td>
-	   		<td>
-	   		<c:if test="${song.albumID == album.ID}">
-	   			${album.year}
-	   		</c:if>
-	   		</td>
-	   		<td>
-	   			${song.price}
-	   		</td>
-	   	</tr>			
-	   	</c:forEach></c:forEach>
-	
-	   </table>
-
-	<p></p>
-	
-	<h4>List of Album(s) Found:</h4>
-	   <table>
-	   <tr>
-	   		<th>
-	   			Album Title
-	   		</th>
-	   		<th>
-	   			Album Artist
-	   		</th>
-	   		<th>
-	   			Genre
-	   		</th>
-	   		<th>
-	   			Publisher
-	   		</th>
-	   		<th>
-	   			Year
-	   		</th>
-	   		<th>
-	   			Price
-	   		</th>
-	   	</tr>
-	   	
-	   	<c:forEach var="album" items="${searchresultsAlbums}">
-	   	<tr>
-	   		<td>
-	   			${album.title}
-	   		</td>
-	   		<td>
-	   			${album.artist}
-	   		</td>
-	   		<td>
-	   			${album.genre}
-	   		</td>
-	   		<td>
-	   			${album.publisher}
-	   		</td>
-	   		<td>
-	   			${album.year}
-	   		</td>
-	   		<td>
-	   			${album.price}
-	   		</td>
-	   	</tr>			
-	   	</c:forEach>
-	
-	   </table>
-	     
-	</div>
-<p></p>
-</c:if>
-
-
-
-<c:if test="${param.options == 'Songs' && not empty searchresultsSongs && not empty searchresultsAlbums}">
-
-<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You searched for: "<%=content%>"</H2>
-<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You filtered by "<%=options%>"</H2>
-
-	<div class="CSSTableGenerator">
-	<h4>List of Song(s) Found:</h4>
-	   	   <table>
-	   <tr>
-	   		<th>
-	   			Song Title
-	   		</th>
-	   		<th>
-	   			Song Artist
-	   		</th>
-	   		
-	   		<th>
-	   			Album Title
-	   		</th>
-	   		<th>
-	   			Genre
-	   		</th>
-	   		<th>
-	   			Publisher
-	   		</th>
-	   		<th>
-	   			Year
-	   		</th>
-	   		<th>
-	   			Price
-	   		</th>
-	   	</tr>
-	   	
-	   	<c:forEach var="song" items="${searchresultsSongs}">
-	   	<!-- Find the album with albumID that matches the random song's ID -->
-	   	<c:forEach var="album" items="${searchresultsAlbums}">
-	   		<c:if test="${song.albumID == album.ID}">
-	   			<c:set var="searchedsongalbum" value="${album}" />
-	   		</c:if>
-	   	</c:forEach>
-	   	<tr>
-	   		<td>
-	   			${song.title}
-	   		</td>
-	   		<td>
-	   			${song.artist}
-	   		</td>
-	   		<td>
-	   		
-	   			${searchedsongalbum.title}
-	   		
-	   		</td>
-	   		<td>
-	   		
-	   			${searchedsongalbum.genre}
-	   		
-	   		</td>
-	   		<td>
-	   		
-	   			${searchedsongalbum.publisher}
-	   		
-	   		</td>
-	   		<td>
-	   		
-	   			${searchedsongalbum.year}
-	   		
-	   		</td>
-	   		<td>
-	   			${song.price}
-	   		</td>
-	   	</tr>			
-	   	</c:forEach>
-	
-	   </table>
-	   
-	   
-	</div>
-</c:if>
-
-<c:if test="${param.options == 'Album' && not empty searchresults}">
-
-<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You searched for: "<%=content%>"</H2>
-<H2 style="font-family: verdana; color: #1B7FC3;" align="center">You filtered by "<%=options%>"</H2>
-
-	<div class="CSSTableGenerator">
-	<h4>List of Album(s) Found:</h4>
-	   <table>
-	   <tr>
-	   		<th>
-	   			Album Title
-	   		</th>
-	   		<th>
-	   			Album Artist
-	   		</th>
-	   		<th>
-	   			Genre
-	   		</th>
-	   		<th>
-	   			Publisher
-	   		</th>
-	   		<th>
-	   			Year
-	   		</th>
-	   		<th>
-	   			Price
-	   		</th>
-	   	</tr>
-	   	
-	   	<c:forEach var="album" items="${searchresults}">
-	   	<tr>
-	   		<td>
-	   			${album.title}
-	   		</td>
-	   		<td>
-	   			${album.artist}
-	   		</td>
-	   		<td>
-	   			${album.genre}
-	   		</td>
-	   		<td>
-	   			${album.publisher}
-	   		</td>
-	   		<td>
-	   			${album.year}
-	   		</td>
-	   		<td>
-	   			${album.price}
-	   		</td>
-	   	</tr>			
-	   	</c:forEach>
-	
-	   </table>
-	   
-	</div>
-</c:if>
 
 
 

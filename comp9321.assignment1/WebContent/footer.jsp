@@ -3,5 +3,5 @@
 <%@ page import="java.util.*" %>
 <center>
 <b style="positioning: absolute; bottom: 20; font-size:small;"> 
-This page was generated on <%= new java.util.Date() %></b>
+© go! Music Pty Ltd | All Rights Reserved 2016</b>
 </center>

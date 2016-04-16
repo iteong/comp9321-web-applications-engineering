@@ -96,7 +96,7 @@ public class DOMParser {
 			}
 			
 			// concatenate all the fields into 1 array list string for searching, put into bean together with other fields' array lists
-			b.setSearchString(b.getArtist() + b.getTitle() + b.getAlbumID() + b.getPrice() + b.getsongID() );
+			b.setSearchString(b.getArtist() + b.getTitle() + b.getAlbumID() + b.getPrice() + b.getSongID() );
 			songList.add(b);
 		}
 		return songList;		

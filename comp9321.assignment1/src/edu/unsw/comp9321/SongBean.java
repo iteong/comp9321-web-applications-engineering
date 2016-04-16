@@ -49,7 +49,7 @@ public class SongBean {
 		this.price = price;
 	}
 	
-	public String getsongID() {
+	public String getSongID() {
 		return songID;
 	}
 	public void setSongID(String songID) {

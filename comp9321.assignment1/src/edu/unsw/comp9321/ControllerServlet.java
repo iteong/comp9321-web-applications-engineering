@@ -34,6 +34,8 @@ public class ControllerServlet extends HttpServlet {
 	// to whole class (not just doGet) as long as class exists
 	public ArrayList<SongBean> songs = new ArrayList<SongBean>();
 	public ArrayList<AlbumBean> albums = new ArrayList<AlbumBean>();
+	public CartBean cart = new CartBean();
+	
 	
     /**
      * @see HttpServlet#HttpServlet()
@@ -115,13 +117,13 @@ public class ControllerServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
+		// use action parameter for form post to know what to do and which JSP to dispatch request to
 		String action = request.getParameter("action");
 		
 		System.out.println("Action: " + action);
 		
 		// get the songs and albums objects containing data needed from session
-//		System.out.println(songs.size());
-//		System.out.println(albums.size());
+
 		// initialize nextPage empty String
 		String nextPage = "";
 				
@@ -194,7 +196,7 @@ public class ControllerServlet extends HttpServlet {
 					        
 							// iterate through all the SongBeans and AlbumBeans in the songList and albumList saved in "songs" and "albums" objects
 							for (SongBean song : songs) {
-								if (song.getTitle().contains(content) || song.getsongID().contains(content)) {
+								if (song.getTitle().contains(content) || song.getSongID().contains(content)) {
 					                   resultsArraySongs.add(song);
 					                   System.out.println(resultsArraySongs);
 					               }
@@ -234,10 +236,44 @@ public class ControllerServlet extends HttpServlet {
 						
 					}
 					// end of else loop for search content that is not empty
+					
+					RequestDispatcher requestdispatcher = request.getRequestDispatcher("/results.jsp");   
+					requestdispatcher.forward(request, response);
+					
+					
+				} else if (action.equals("cart")) {
+					
+					RequestDispatcher requestdispatcher = request.getRequestDispatcher("/cart.jsp");   
+					requestdispatcher.forward(request, response);
+					
+					
+				} else if (action.equals("add")) {
+					
+					String selected[] = request.getParameterValues("checkbox-anything-songs"); 
+					
+					// iterate through the songs selected in results.jsp for matching songs in order to add to cart
+					for (int i = 0; i < selected.length; i++) {
+						System.out.println("You selected song with songID: " + selected[i]);
+						
+						// iterate through SongBeans in global variable, songs
+						for (SongBean song : songs) {
+							// selected song is added to cart using songID to match with SongBean's songID & break out of for loop
+							if (song.getSongID().matches(selected[i])) {
+								cart.addSong(song);
+								break;
+							}
+						}	
+						
+					} 
+					ArrayList<SongBean> songsInCart = cart.getSongs();
+					System.out.println("You added " + selected.length + " songs to your cart and have a total of " + cart.getSongs().size() + " songs in your cart now!");
+					System.out.println("Songs in cart now: " + songsInCart);
+					
+					request.setAttribute("songsCart", songsInCart);
+					RequestDispatcher requestdispatcher = request.getRequestDispatcher("/cart.jsp");   
+					requestdispatcher.forward(request, response);
 				}
-		
-		RequestDispatcher requestdispatcher = request.getRequestDispatcher("/results.jsp");   
-		requestdispatcher.forward(request, response);
+	
 	}
 	
 	protected void getParameter(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

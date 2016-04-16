@@ -1,7 +1,5 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1"%>
-<%@ page import="org.xml.sax.*"%>    
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
 <%@ page import="edu.unsw.comp9321.*, java.util.*" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -20,36 +18,27 @@
 		session.setAttribute("shopping", cartBean);
 		session.setAttribute("songBean", songBean);
 		session.setAttribute("albumBean", albumBean);
-		System.out.println("search.jsp: Creating New Session.");
+		System.out.println("cart.jsp: Creating New Session.");
 	} else {
-		System.out.println("search.jsp: Already In Session.");
+		System.out.println("cart.jsp: Already In Session.");
 	}
+	
+	cartBean = (CartBean) session.getAttribute("shopping");
+
+	// get SongBeans and AlbumBeans so can fetch CartBean attributes from them
+	//ArrayList<SongBean> songbean = (ArrayList<SongBean>) session.getAttribute("songsCart");
+	ArrayList<SongBean> songbean = cartBean.getSongs();
+	ArrayList<AlbumBean> albumbean = cartBean.getAlbums();
 %>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-<title>go! Music - Home</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>go! Music - Shopping Cart</title>
 <style type="text/css">
 <!-- CSS styles for standard search box -->
-	#header{
-		background-color:#c3dfef;
-	}
-	#newsearch{
-		float:center;
-		padding:20px;
-	}
-	.searchtextinput{
-		margin: 0;
-		padding: 5px 15px;
-		font-family: Arial, Helvetica, sans-serif;
-		font-size:14px;
-		border:1px solid #0076a3; border-right:0px;
-		border-top-left-radius: 5px 5px;
-		border-bottom-left-radius: 5px 5px;
-	}
-	.searchbutton {
+	.backtosearchbutton {
 		margin: 0;
 		padding: 5px 15px;
 		font-family: Arial, Helvetica, sans-serif;
@@ -66,17 +55,17 @@
 		border-top-right-radius: 5px 5px;
 		border-bottom-right-radius: 5px 5px;
 	}
-	.searchbutton:hover {
+	.backtosearchbutton:hover {
 		text-decoration: none;
 		background: #007ead;
 		background: -webkit-gradient(linear, left top, left bottom, from(#0095cc), to(#00678e));
 		background: -moz-linear-gradient(top,  #0095cc,  #00678e);
 	}
 	/* Fixes submit button height problem in Firefox */
-	.searchbutton::-moz-focus-inner {
+	.backtosearchbutton::-moz-focus-inner {
 	  border: 0;
 	}
-	.searchclear{
+	.backtosearchclear{
 		clear:both;
 	}
 	
@@ -184,81 +173,49 @@
 </style>
 </head>
 
-<%@ include file="Header.html"%>
 <body>
 
-<!-- HTML for SEARCH BAR -->
-<div id="header">
-<center>
-	<!-- post action to go to doPost method of ControllerServlet -->
-	<form id="newsearch" method="post" action="search">
-		<!-- hidden input tag to identify this form action as search -->
-		<input type="hidden" name="action" value="search"></input>
-		
-		<input type="text" name="content" class="searchtextinput" size="80" maxlength="100" placeholder="Search Artist, Title, Albums or Songs..."></input>
-		<input type="submit" value="search" class="searchbutton"></input>
-		
-		<div>&nbsp;</div>
-		<div>Advanced Search:
-		<select name="options">
-  			<option value="Anything">Anything</option>
-  			<option value="Album">Album</option>
-  			<option value="Artist">Artist</option>
-  			<option value="Songs">Songs</option>
-		</select>
-		</div>
-			
-	</form>
-</center>
-<div class="searchclear"></div>
+<H2 style="font-family: verdana; color: #1B7FC3;" align="center">Shopping Cart</H2>
+	
+	<!-- Message about whether the shopping cart is empty or not -->
+	<c:choose>
+		<c:when test="<%= songbean.size() == 0 && albumbean.size() == 0 %>">
+			<h2><small>Your shopping cart is empty.</small></h2>
+		</c:when>
+		<c:when test="<%= songbean.size() >= 1 || albumbean.size() >= 1 %>">
+			<h2><small>Your shopping cart has <%= songbean.size() %> song(s) and <%= albumbean.size() %> album(s).</small></h2>
+		</c:when>
+	</c:choose>
 
-</div>
+<c:if test="<%= songbean.size() >= 1 %>">
 
-<!-- Shopping Cart -->
-<div align="center">
-	<!-- post action to go to doPost method of ControllerServlet -->
-	<form method="post" action="search">
-		<input type="image" name="cartbutton" src="./view-cart.png"></input>
-		<!-- hidden input tag to identify this form action as cart -->
-		<input type="hidden" name="action" value="cart"></input>
-	</form>
-</div>
-
-<h3 style="font-family: verdana; color: #1B7FC3;" align="center">10 Recommended Songs On <%= new java.util.Date() %></h3>
-<div class="CSSTableGenerator">
+	<div class="CSSTableGenerator">
+	<h4>List of Song(s) in Cart:</h4>
 	   <table>
 	   <tr>
 	   		<th>
-	   			Song Title
+	   			Title
 	   		</th>
 	   		<th>
-	   			Song Artist
+	   			Artist
 	   		</th>
 	   		
 	   		<th>
-	   			Album Title
-	   		</th>
-	   		<th>
-	   			Genre
+	   			Type
 	   		</th>
 	   		<th>
 	   			Publisher
 	   		</th>
 	   		<th>
-	   			Year
+	   			Price
 	   		</th>
 	   		<th>
-	   			Price
+	   			Select
 	   		</th>
 	   	</tr>
 	   	
-	   	<c:forEach var="song" items="${randomsongs}">
-	   	<!-- Find the album with albumID that matches the random song's ID -->
-	   	<c:forEach var="album" items="${randomalbums}">
-	   		<c:if test="${song.albumID == album.ID}">
-	   			<c:set var="randomsongalbum" value="${album}" />
-	   		</c:if>
-	   	</c:forEach>
+	   	<c:forEach var="song" items="${songBean}">
+	   	<c:forEach var="album" items="${albumBean}">
 	   	<tr>
 	   		<td>
 	   			${song.title}
@@ -267,37 +224,108 @@
 	   			${song.artist}
 	   		</td>
 	   		<td>
-	   		
-	   			${randomsongalbum.title}
-	   		
+		   		Song
 	   		</td>
 	   		<td>
-	   		
-	   			${randomsongalbum.genre}
-	   		
-	   		</td>
-	   		<td>
-	   		
-	   			${randomsongalbum.publisher}
-	   		
-	   		</td>
-	   		<td>
-	   		
-	   			${randomsongalbum.year}
-	   		
+	   		<c:if test="${song.albumID == album.ID}">
+	   			${album.publisher}
+	   		</c:if>
 	   		</td>
 	   		<td>
 	   			${song.price}
+	   		</td>
+	   		<td>
+	   			<input type="checkbox" name="checkbox-cart-songs" />&nbsp;
+	   		</td>
+	   	</tr>			
+	   	</c:forEach></c:forEach>
+	
+	   </table>
+	</div>
+</c:if>
+
+	<p></p>
+
+<c:if test="<%= albumbean.size() >= 1 %>">
+
+	<div class="CSSTableGenerator">
+	<h4>List of Album(s) in Cart:</h4>
+	   <table>
+	   <tr>
+	   		<th>
+	   			Title
+	   		</th>
+	   		<th>
+	   			Artist
+	   		</th>
+	   		<th>
+	   			Type
+	   		</th>
+	   		<th>
+	   			Publisher
+	   		</th>
+	   		<th>
+	   			Price
+	   		</th>
+	   		<th>
+	   			Select
+	   		</th>
+	   	</tr>
+	   	
+	   	<c:forEach var="album" items="${searchresultsAlbums}">
+	   	<tr>
+	   		<td>
+	   			${album.title}
+	   		</td>
+	   		<td>
+	   			${album.artist}
+	   		</td>
+	   		<td>
+	   			Album
+	   		</td>
+	   		<td>
+	   			${album.publisher}
+	   		</td>
+	   		<td>
+	   			${album.price}
+	   		</td>
+	   		<td>
+	   			<input type="checkbox" name="checkbox-cart-albums" />&nbsp;
 	   		</td>
 	   	</tr>			
 	   	</c:forEach>
 	
 	   </table>
-	   
-	   
 	</div>
+</c:if>
+
 <p></p>
-<%@ include file="footer.jsp"%>
+
+
+	<!-- Show BACK TO SEARCH button when shopping cart is empty, or REMOVE ITEM FROM CART & CHECKOUT buttons otherwise -->
+	<c:choose>
+		<c:when test="<%= songbean.size() == 0 && albumbean.size() == 0 %>">
+			<button id="backSearchButton" class="float-left backtosearchbutton" >Back to Search</button>
+			<script type="text/javascript">
+    			document.getElementById("backSearchButton").onclick = function () {
+        			location.href = "search";
+    			};
+			</script>
+		</c:when>
+		<c:when test="<%= songbean.size() >= 1 || albumbean.size() >= 1 %>">
+			<div align="center">			
+				<form method="post" action="search">
+					<input type="image" name="removebutton" src="./remove-cart.png"></input>
+					<input type="hidden" name="action" value="remove"></input>
+				</form>
+			
+				<form method="post" action="search">
+					<input type="image" name="checkoutbutton" src="./secure-checkout.png"></input>
+					<input type="hidden" name="action" value="checkout"></input>
+				</form>
+			</div>
+		</c:when>
+	</c:choose>
 
 </body>
 </html>
