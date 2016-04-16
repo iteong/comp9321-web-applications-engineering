@@ -12,7 +12,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
+import javax.servlet.http.HttpSession;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.xml.parsers.DocumentBuilder;
@@ -115,165 +115,176 @@ public class ControllerServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
 		// use action parameter for form post to know what to do and which JSP to dispatch request to
 		String action = request.getParameter("action");
-		
+
 		System.out.println("Action: " + action);
-		
+
 		// get the songs and albums objects containing data needed from session
 
 		// initialize nextPage empty String
 		String nextPage = "";
-				
+
 		if (action.equals("search")) {
 			String content = request.getParameter("content");
 			String options = request.getParameter("options");
 			System.out.println("You searched for: " + content);
 			System.out.println("You filtered by " + options);
-					
-					// when nothing entered in search box
-					if (content.length() == 0) {
-						request.setAttribute("content", "nothing");
-						nextPage = "search.jsp";
-						System.out.println("User did not key in anything");
-						
-					// when something entered in search box
-					} else {
-						// check which Advanced Search option is selected, by default = Anything
-						
-						if (options.equals("Anything")) {			
-							// create 2 separate array lists of SongBeans and AlbumBeans to store searched results
-							ArrayList<SongBean> resultsArraySongs = new ArrayList<SongBean>();
-							ArrayList<AlbumBean> resultsArrayAlbums = new ArrayList<AlbumBean>();
-							// iterate through all the SongBeans and AlbumBeans in the songList and albumList saved in "songs" and "albums" objects
-							for (SongBean song : songs) {
-								if (song.getSearchString().contains(content) ) {
-					                   resultsArraySongs.add(song);
-					                   System.out.println(resultsArraySongs);
-					               }
-							}
-							request.setAttribute("searchresultsSongs", resultsArraySongs);
-							
-							for (AlbumBean album : albums) {
-								if (album.getSearchString().contains(content) ) {
-					                   resultsArrayAlbums.add(album);
-					                   System.out.println(resultsArrayAlbums);
-					               }
-							}
-							request.setAttribute("searchresultsAlbums", resultsArrayAlbums);
-						
-							
-							
-						} else if (options.equals("Artist")) {
-							// create 2 separate array lists of SongBeans and AlbumBeans to store searched results
-							ArrayList<SongBean> resultsArraySongs = new ArrayList<SongBean>();
-							ArrayList<AlbumBean> resultsArrayAlbums = new ArrayList<AlbumBean>();
-							// iterate through all the SongBeans and AlbumBeans in the songList and albumList saved in "songs" and "albums" objects
-							for (SongBean song : songs) {
-								if (song.getArtist().contains(content) ) {
-					                   resultsArraySongs.add(song);
-					                   System.out.println(resultsArraySongs);
-					               }
-							}
-							request.setAttribute("searchresultsSongs", resultsArraySongs);
-							
-							for (AlbumBean album : albums) {
-								if (album.getArtist().contains(content) ) {
-					                   resultsArrayAlbums.add(album);
-					                   System.out.println(resultsArrayAlbums);
-					               }
-							}
-							request.setAttribute("searchresultsAlbums", resultsArrayAlbums);
-							
-							
-							
-						} else if (options.equals("Songs")) {
-							// create 2 separate array lists of SongBeans and AlbumBeans to store searched results
-							ArrayList<SongBean> resultsArraySongs = new ArrayList<SongBean>();
-							ArrayList<AlbumBean> resultsArrayAlbums = new ArrayList<AlbumBean>();
-					        
-							// iterate through all the SongBeans and AlbumBeans in the songList and albumList saved in "songs" and "albums" objects
-							for (SongBean song : songs) {
-								if (song.getTitle().contains(content) || song.getSongID().contains(content)) {
-					                   resultsArraySongs.add(song);
-					                   System.out.println(resultsArraySongs);
-					               }
-								
-								// assign string value of albumID for this random song to songAlbumID
-			       				String songAlbumID = song.getAlbumID();
-			       				for (AlbumBean album : albums) {
-									if (album.getID().contains(songAlbumID)) {
-						                   resultsArrayAlbums.add(album);
-						                   System.out.println(resultsArrayAlbums);
-						                   break;
-						               }
-								}
-			       				
-							}
-							request.setAttribute("searchresultsAlbums", resultsArrayAlbums);
-							request.setAttribute("searchresultsSongs", resultsArraySongs);
-							
-							
-							
-							
-							
-						} else if (options.equals("Album")) {						
-							// create a separate array list of AlbumBeans to store searched results
-							ArrayList<AlbumBean> resultsArray = new ArrayList<AlbumBean>();
-					        
-							// iterate through all the AlbumBeans in the albumList saved in "albums" object
-							for (AlbumBean album : albums) {
-								// searching for albums by title or ID only 
-								if (album.getTitle().contains(content) || album.getID().contains(content) ) {
-					                   resultsArray.add(album);
-					                   System.out.println(resultsArray);
-					               }
-							}
-							request.setAttribute("searchresults", resultsArray);
+
+			// when nothing entered in search box
+			if (content.length() == 0) {
+				request.setAttribute("content", "nothing");
+				nextPage = "search.jsp";
+				System.out.println("User did not key in anything");
+
+				// when something entered in search box
+			} else {
+				// check which Advanced Search option is selected, by default = Anything
+
+				if (options.equals("Anything")) {
+					// create 2 separate array lists of SongBeans and AlbumBeans to store searched results
+					ArrayList<SongBean> resultsArraySongs = new ArrayList<SongBean>();
+					ArrayList<AlbumBean> resultsArrayAlbums = new ArrayList<AlbumBean>();
+					// iterate through all the SongBeans and AlbumBeans in the songList and albumList saved in "songs" and "albums" objects
+					for (SongBean song : songs) {
+						if (song.getSearchString().contains(content)) {
+							resultsArraySongs.add(song);
+							System.out.println(resultsArraySongs);
 						}
-						
 					}
-					// end of else loop for search content that is not empty
-					
-					RequestDispatcher requestdispatcher = request.getRequestDispatcher("/results.jsp");   
-					requestdispatcher.forward(request, response);
-					
-					
-				} else if (action.equals("cart")) {
-					
-					RequestDispatcher requestdispatcher = request.getRequestDispatcher("/cart.jsp");   
-					requestdispatcher.forward(request, response);
-					
-					
-				} else if (action.equals("add")) {
-					
-					String selected[] = request.getParameterValues("checkbox-anything-songs"); 
-					
-					// iterate through the songs selected in results.jsp for matching songs in order to add to cart
-					for (int i = 0; i < selected.length; i++) {
-						System.out.println("You selected song with songID: " + selected[i]);
-						
-						// iterate through SongBeans in global variable, songs
-						for (SongBean song : songs) {
-							// selected song is added to cart using songID to match with SongBean's songID & break out of for loop
-							if (song.getSongID().matches(selected[i])) {
-								cart.addSong(song);
+					request.setAttribute("searchresultsSongs", resultsArraySongs);
+
+					for (AlbumBean album : albums) {
+						if (album.getSearchString().contains(content)) {
+							resultsArrayAlbums.add(album);
+							System.out.println(resultsArrayAlbums);
+						}
+					}
+					request.setAttribute("searchresultsAlbums", resultsArrayAlbums);
+
+				} else if (options.equals("Artist")) {
+					// create 2 separate array lists of SongBeans and AlbumBeans to store searched results
+					ArrayList<SongBean> resultsArraySongs = new ArrayList<SongBean>();
+					ArrayList<AlbumBean> resultsArrayAlbums = new ArrayList<AlbumBean>();
+					// iterate through all the SongBeans and AlbumBeans in the songList and albumList saved in "songs" and "albums" objects
+					for (SongBean song : songs) {
+						if (song.getArtist().contains(content)) {
+							resultsArraySongs.add(song);
+							System.out.println(resultsArraySongs);
+						}
+					}
+					request.setAttribute("searchresultsSongs", resultsArraySongs);
+
+					for (AlbumBean album : albums) {
+						if (album.getArtist().contains(content)) {
+							resultsArrayAlbums.add(album);
+							System.out.println(resultsArrayAlbums);
+						}
+					}
+					request.setAttribute("searchresultsAlbums", resultsArrayAlbums);
+
+				} else if (options.equals("Songs")) {
+					// create 2 separate array lists of SongBeans and AlbumBeans to store searched results
+					ArrayList<SongBean> resultsArraySongs = new ArrayList<SongBean>();
+					ArrayList<AlbumBean> resultsArrayAlbums = new ArrayList<AlbumBean>();
+
+					// iterate through all the SongBeans and AlbumBeans in the songList and albumList saved in "songs" and "albums" objects
+					for (SongBean song : songs) {
+						if (song.getTitle().contains(content) || song.getSongID().contains(content)) {
+							resultsArraySongs.add(song);
+							System.out.println(resultsArraySongs);
+						}
+
+						// assign string value of albumID for this random song to songAlbumID
+						String songAlbumID = song.getAlbumID();
+						for (AlbumBean album : albums) {
+							if (album.getID().contains(songAlbumID)) {
+								resultsArrayAlbums.add(album);
+								System.out.println(resultsArrayAlbums);
 								break;
 							}
-						}	
-						
-					} 
-					ArrayList<SongBean> songsInCart = cart.getSongs();
-					System.out.println("You added " + selected.length + " songs to your cart and have a total of " + cart.getSongs().size() + " songs in your cart now!");
-					System.out.println("Songs in cart now: " + songsInCart);
-					
-					request.setAttribute("songsCart", songsInCart);
-					RequestDispatcher requestdispatcher = request.getRequestDispatcher("/cart.jsp");   
-					requestdispatcher.forward(request, response);
+						}
+
+					}
+					request.setAttribute("searchresultsAlbums", resultsArrayAlbums);
+					request.setAttribute("searchresultsSongs", resultsArraySongs);
+
+				} else if (options.equals("Album")) {
+					// create a separate array list of AlbumBeans to store searched results
+					ArrayList<AlbumBean> resultsArray = new ArrayList<AlbumBean>();
+
+					// iterate through all the AlbumBeans in the albumList saved in "albums" object
+					for (AlbumBean album : albums) {
+						// searching for albums by title or ID only
+						if (album.getTitle().contains(content) || album.getID().contains(content)) {
+							resultsArray.add(album);
+							System.out.println(resultsArray);
+						}
+					}
+					request.setAttribute("searchresults", resultsArray);
 				}
-	
+
+			}
+			// end of else loop for search content that is not empty
+
+			RequestDispatcher requestdispatcher = request.getRequestDispatcher("/results.jsp");
+			requestdispatcher.forward(request, response);
+
+		} else if (action.equals("cart")) {
+
+			RequestDispatcher requestdispatcher = request.getRequestDispatcher("/cart.jsp");
+			requestdispatcher.forward(request, response);
+
+		} else if (action.equals("add")) {
+
+			String selected[] = request.getParameterValues("checkbox-anything-songs");
+			// selected songs' album details
+			ArrayList<AlbumBean> cartAlbumDetailsForSongs = new ArrayList<AlbumBean>();
+			
+			// iterate through the songs selected in results.jsp for matching songs in order to add to cart
+			for (int i = 0; i < selected.length; i++) {
+				System.out.println("You selected song with songID: " + selected[i]);
+
+				// iterate through SongBeans in global variable, songs
+				for (SongBean song : songs) {
+					// selected song is added to cart using songID to match with SongBean's songID & break out of for loop
+					if (song.getSongID().matches(selected[i])) {
+						cart.addSong(song);
+						break;
+					}
+					
+					// assign string value of albumID for this random song to songAlbumID
+					String songAlbumID = song.getAlbumID();
+					for (AlbumBean album : albums) {
+						if (album.getID().contains(songAlbumID)) {
+							cartAlbumDetailsForSongs.add(album);
+							break;
+						}
+					}
+
+				} // end of for loop to find selected song in global variable, songs
+				HttpSession session = request.getSession(true);
+				session.setAttribute("songAlbumBean", cartAlbumDetailsForSongs);
+			}
+
+			System.out.println("You added " + selected.length + " songs to your cart and have a total of "
+					+ cart.getSongs().size() + " songs in your cart now!");
+			System.out.println("Songs in cart now: " + cart.getSongsSize());
+
+			HttpSession session = request.getSession(true);
+			session.setAttribute("shopping", cart);
+
+			request.setAttribute("songBeanBean", cart.getSongs());
+			request.setAttribute("albumBeanBean", cart.getAlbums());
+
+			RequestDispatcher requestdispatcher = request.getRequestDispatcher("/cart.jsp");
+			requestdispatcher.forward(request, response);
+
+		}
+
 	}
 	
 	protected void getParameter(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

@@ -31,7 +31,7 @@ public class CartBean {
 	}
 	
 	// function to check the number of songs inside SongsCart or AlbumsCart
-	public int getSongSize() {
+	public int getSongsSize() {
 		return SongsCart.size();
 	}
 	public int getAlbumsSize() {

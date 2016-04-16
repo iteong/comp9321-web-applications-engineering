@@ -22,13 +22,14 @@
 	} else {
 		System.out.println("cart.jsp: Already In Session.");
 	}
-	
+
 	cartBean = (CartBean) session.getAttribute("shopping");
 
 	// get SongBeans and AlbumBeans so can fetch CartBean attributes from them
 	//ArrayList<SongBean> songbean = (ArrayList<SongBean>) session.getAttribute("songsCart");
 	ArrayList<SongBean> songbean = cartBean.getSongs();
 	ArrayList<AlbumBean> albumbean = cartBean.getAlbums();
+	
 %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -214,8 +215,8 @@
 	   		</th>
 	   	</tr>
 	   	
-	   	<c:forEach var="song" items="${songBean}">
-	   	<c:forEach var="album" items="${albumBean}">
+	   	<c:forEach var="song" items="${songBeanBean}">
+	   	<c:forEach var="album" items="${songAlbumBean}">
 	   	<tr>
 	   		<td>
 	   			${song.title}
@@ -227,9 +228,7 @@
 		   		Song
 	   		</td>
 	   		<td>
-	   		<c:if test="${song.albumID == album.ID}">
 	   			${album.publisher}
-	   		</c:if>
 	   		</td>
 	   		<td>
 	   			${song.price}
@@ -272,7 +271,7 @@
 	   		</th>
 	   	</tr>
 	   	
-	   	<c:forEach var="album" items="${searchresultsAlbums}">
+	   	<c:forEach var="album" items="${songAlbumAlbum}">
 	   	<tr>
 	   		<td>
 	   			${album.title}
