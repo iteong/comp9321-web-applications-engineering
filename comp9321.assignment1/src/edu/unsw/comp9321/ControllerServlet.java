@@ -1,7 +1,7 @@
 package edu.unsw.comp9321;
 
 import java.io.IOException;
-
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -89,7 +89,6 @@ public class ControllerServlet extends HttpServlet {
 			
 			// assign string value of albumID for this random song to songAlbumID
 			String songAlbumID = songs.get(r).getAlbumID();
-
 			// iterate through albums to look for AlbumBean with same ID as songAlbumID
 			for (AlbumBean album : albums) {
 				if (album.getID().contains(songAlbumID)) {
@@ -128,6 +127,7 @@ public class ControllerServlet extends HttpServlet {
 		// initialize nextPage empty String
 		String nextPage = "";
 
+		
 		if (action.equals("search")) {
 			String content = request.getParameter("content");
 			String options = request.getParameter("options");
@@ -195,18 +195,18 @@ public class ControllerServlet extends HttpServlet {
 					for (SongBean song : songs) {
 						if (song.getTitle().contains(content) || song.getSongID().contains(content)) {
 							resultsArraySongs.add(song);
+							// assign string value of albumID for this random song to songAlbumID
+							String songAlbumID = song.getAlbumID();
+							for (AlbumBean album : albums) {
+								if (album.getID().contains(songAlbumID)) {
+									resultsArrayAlbums.add(album);
+									System.out.println(resultsArrayAlbums);
+									break;
+								}
+							}
 							System.out.println(resultsArraySongs);
 						}
 
-						// assign string value of albumID for this random song to songAlbumID
-						String songAlbumID = song.getAlbumID();
-						for (AlbumBean album : albums) {
-							if (album.getID().contains(songAlbumID)) {
-								resultsArrayAlbums.add(album);
-								System.out.println(resultsArrayAlbums);
-								break;
-							}
-						}
 
 					}
 					request.setAttribute("searchresultsAlbums", resultsArrayAlbums);
@@ -229,7 +229,9 @@ public class ControllerServlet extends HttpServlet {
 
 			}
 			// end of else loop for search content that is not empty
-
+			HttpSession session = request.getSession(true);
+			session.setAttribute("optionsforadd", options);
+			
 			RequestDispatcher requestdispatcher = request.getRequestDispatcher("/results.jsp");
 			requestdispatcher.forward(request, response);
 
@@ -237,51 +239,287 @@ public class ControllerServlet extends HttpServlet {
 
 			RequestDispatcher requestdispatcher = request.getRequestDispatcher("/cart.jsp");
 			requestdispatcher.forward(request, response);
+			
+		} else if (action.equals("confirmcheckout")) {
+			
+			// As long as action is not null, we proceed to delete data from cart and invalidate session
+			String actioncheckout = request.getParameter("action");
+			if (actioncheckout != null) {
+				try {
+					// Delete data from database
+					cart = null;
+				} catch (Exception e) { 
+					e.printStackTrace();
+				}
+				
+				// Invalidate session
+				request.getSession().invalidate();
+				
+				// Redirect to home page
+				RequestDispatcher rd = request.getRequestDispatcher("/search.jsp"); 
+				rd.forward(request, response);
+				
+			} 
+
+		} else if (action.equals("checkout")) {
+
+			RequestDispatcher requestdispatcher = request.getRequestDispatcher("/checkout.jsp");
+			requestdispatcher.forward(request, response);
 
 		} else if (action.equals("add")) {
 
-			String selected[] = request.getParameterValues("checkbox-anything-songs");
-			// selected songs' album details
-			ArrayList<AlbumBean> cartAlbumDetailsForSongs = new ArrayList<AlbumBean>();
-			
-			// iterate through the songs selected in results.jsp for matching songs in order to add to cart
-			for (int i = 0; i < selected.length; i++) {
-				System.out.println("You selected song with songID: " + selected[i]);
+			HttpSession session = request.getSession(true);
+			String options = (String) session.getAttribute("optionsforadd");
+			System.out.println(options);
+			// get check box values for songs and albums on results.jsp based on option selected
+			if (options.equals("Anything")) {
+				String selectedsongs[] = request.getParameterValues("checkbox-anything-songs");
+				String selectedalbums[] = request.getParameterValues("checkbox-anything-albums");
+				float total = 0;
+				// selected songs' album details
+				ArrayList<AlbumBean> cartAlbumDetailsForSongs = new ArrayList<AlbumBean>();
+				
+				boolean executedsongs = false;
+				if (!executedsongs && selectedsongs != null) {
+					executedsongs  = true;
+				// iterate through the songs selected in results.jsp for matching songs in order to add to cart
+				for (int i = 0; i < selectedsongs.length; i++) {
+					System.out.println("You selected song with songID: " + selectedsongs[i]);
 
-				// iterate through SongBeans in global variable, songs
-				for (SongBean song : songs) {
-					// selected song is added to cart using songID to match with SongBean's songID & break out of for loop
-					if (song.getSongID().matches(selected[i])) {
-						cart.addSong(song);
-						break;
-					}
-					
-					// assign string value of albumID for this random song to songAlbumID
-					String songAlbumID = song.getAlbumID();
-					for (AlbumBean album : albums) {
-						if (album.getID().contains(songAlbumID)) {
-							cartAlbumDetailsForSongs.add(album);
+					// iterate through SongBeans in global variable, songs
+					for (SongBean song : songs) {
+						// selected song is added to cart using songID to match with SongBean's songID & break out of for loop
+						if (song.getSongID().matches(selectedsongs[i])) {
+							cart.addSong(song);
+							total += song.getPrice();
+							System.out.println("Added the following song to cart: " + song.getTitle());
+							// assign string value of albumID for this selected song to songAlbumID
+							String songAlbumID = song.getAlbumID();
+							for (AlbumBean album : albums) {
+								if (album.getID().matches(songAlbumID)) {
+									cartAlbumDetailsForSongs.add(album);
+									System.out.println("This song is from the album: " + album.getTitle());
+									break;
+								}
+							}
 							break;
 						}
-					}
+						
+					} // end of for loop to find selected song in global variable, songs
 
-				} // end of for loop to find selected song in global variable, songs
-				HttpSession session = request.getSession(true);
+				}
+				System.out.println("Finished iterating through the selected songs.");
+				System.out.println("You added " + selectedsongs.length + " song(s) to your cart and have a total of " + cart.getSongs().size() + " song(s) in your cart now!");
+				
+				}
+				
+				boolean executedalbums = false;
+				if (!executedalbums && selectedalbums != null) {
+					executedalbums = true;
+				// iterate through the albums selected in results.jsp for matching albums in order to add to cart
+				for (int i = 0; i < selectedalbums.length; i++) {
+					System.out.println("You selected album with ID: " + selectedalbums[i]);
+
+					// iterate through AlbumsBeans in global variable, albums
+					for (AlbumBean album : albums) {
+						// selected album is added to cart using album's ID to match with AlbumBean's ID & break out of for loop
+						if (album.getID().matches(selectedalbums[i])) {
+							cart.addAlbum(album);
+							total += album.getPrice();
+							System.out.println("Added the following album to cart: " + album.getTitle());
+							System.out.println("Number of albums in cart now: " + cart.getAlbumsSize());
+							break;
+						}
+						
+					} // end of for loop to find selected album in global variable, albums
+
+				}
+				System.out.println("Finished iterating through the selected albums.");
+				System.out.println("You added " + selectedalbums.length + " album(s) to your cart and have a total of " + cart.getAlbums().size() + " albums(s) in your cart now!");
+				
+				}
+
+				session.setAttribute("shopping", cart);
+				session.setAttribute("albumBeanBean", cart.getAlbums());
+				session.setAttribute("songBeanBean", cart.getSongs());
 				session.setAttribute("songAlbumBean", cartAlbumDetailsForSongs);
+				session.setAttribute("total", total);
+				System.out.println("Total price is: " + total);
+				RequestDispatcher requestdispatcher = request.getRequestDispatcher("/cart.jsp");
+				requestdispatcher.forward(request, response);
+				
+				
+				
+				
+				
+			} else if (options.equals("Artist")) {
+				String selectedsongs[] = request.getParameterValues("checkbox-artist-songs");
+				String selectedalbums[] = request.getParameterValues("checkbox-artist-albums");
+				float total = 0;
+				// selected songs' album details
+				ArrayList<AlbumBean> cartAlbumDetailsForSongs = new ArrayList<AlbumBean>();
+				
+				boolean executedsongs = false;
+				if (!executedsongs && selectedsongs != null) {
+					executedsongs = true;
+				// iterate through the songs selected in results.jsp for matching songs in order to add to cart
+				for (int i = 0; i < selectedsongs.length; i++) {
+					System.out.println("You selected song with songID: " + selectedsongs[i]);
+
+					// iterate through SongBeans in global variable, songs
+					for (SongBean song : songs) {
+						// selected song is added to cart using songID to match with SongBean's songID & break out of for loop
+						if (song.getSongID().matches(selectedsongs[i])) {
+							cart.addSong(song);
+							total += song.getPrice();
+							System.out.println("Added the following song to cart: " + song.getTitle());
+							// assign string value of albumID for this selected song to songAlbumID
+							String songAlbumID = song.getAlbumID();
+							for (AlbumBean album : albums) {
+								if (album.getID().matches(songAlbumID)) {
+									cartAlbumDetailsForSongs.add(album);
+									System.out.println("This song is from the album: " + album.getTitle());
+									break;
+								}
+							}
+							break;
+						}
+						
+					} // end of for loop to find selected song in global variable, songs
+
+				}
+				System.out.println("Finished iterating through the selected songs.");
+				System.out.println("You added " + selectedsongs.length + " song(s) to your cart and have a total of " + cart.getSongs().size() + " song(s) in your cart now!");
+
+				}
+				
+				boolean executedalbums = false;
+				if (!executedalbums && selectedalbums != null) {
+					executedalbums = true;
+				// iterate through the albums selected in results.jsp for matching albums in order to add to cart
+				for (int i = 0; i < selectedalbums.length; i++) {
+					System.out.println("You selected album with ID: " + selectedalbums[i]);
+
+					// iterate through AlbumsBeans in global variable, albums
+					for (AlbumBean album : albums) {
+						// selected album is added to cart using album's ID to match with AlbumBean's ID & break out of for loop
+						if (album.getID().matches(selectedalbums[i])) {
+							cart.addAlbum(album);
+							total += album.getPrice();
+							System.out.println("Added the following album to cart: " + album.getTitle());
+							break;
+						}
+						
+					} // end of for loop to find selected album in global variable, albums
+
+				}
+				System.out.println("Finished iterating through the selected albums.");
+				System.out.println("You added " + selectedalbums.length + " album(s) to your cart and have a total of " + cart.getAlbums().size() + " albums(s) in your cart now!");
+
+				}
+				
+
+				session.setAttribute("shopping", cart);
+				session.setAttribute("total", total);
+				session.setAttribute("albumBeanBean", cart.getAlbums());
+				session.setAttribute("songBeanBean", cart.getSongs());
+				session.setAttribute("songAlbumBean", cartAlbumDetailsForSongs);
+
+				RequestDispatcher requestdispatcher = request.getRequestDispatcher("/cart.jsp");
+				requestdispatcher.forward(request, response);
+				
+				
+				
+				
+			} else if (options.equals("Album")) {
+				String selectedalbums[] = request.getParameterValues("checkbox-album-albums");
+				float total = 0;
+				boolean executedalbums = false;
+				if (!executedalbums && selectedalbums != null) {
+					executedalbums = true;
+				// iterate through the albums selected in results.jsp for matching albums in order to add to cart
+				for (int i = 0; i < selectedalbums.length; i++) {
+					System.out.println("You selected album with ID: " + selectedalbums[i]);
+
+					// iterate through AlbumsBeans in global variable, albums
+					for (AlbumBean album : albums) {
+						// selected album is added to cart using album's ID to match with AlbumBean's ID & break out of for loop
+						if (album.getID().matches(selectedalbums[i])) {
+							cart.addAlbum(album);
+							total += album.getPrice();
+							System.out.println("Added the following album to cart: " + album.getTitle());
+							break;
+						}
+						
+					} // end of for loop to find selected album in global variable, albums
+
+				}
+				System.out.println("Finished iterating through the selected albums.");
+				System.out.println("You added " + selectedalbums.length + " album(s) to your cart and have a total of " + cart.getAlbums().size() + " albums(s) in your cart now!");
+		
+				}
+
+				session.setAttribute("shopping", cart);
+				session.setAttribute("albumBeanBean", cart.getAlbums());
+				session.setAttribute("songBeanBean", cart.getSongs());
+				session.setAttribute("total", total);
+
+
+				RequestDispatcher requestdispatcher = request.getRequestDispatcher("/cart.jsp");
+				requestdispatcher.forward(request, response);
+				
+				
+				
+
+			} else if (options.equals("Songs")) {
+				String selectedsongs[] = request.getParameterValues("checkbox-songs-songs");
+				float total = 0;
+				// selected songs' album details
+				ArrayList<AlbumBean> cartAlbumDetailsForSongs = new ArrayList<AlbumBean>();
+				
+				boolean executedsongs = false;
+				if (!executedsongs && selectedsongs != null) {
+					executedsongs = true;
+				// iterate through the songs selected in results.jsp for matching songs in order to add to cart
+				for (int i = 0; i < selectedsongs.length; i++) {
+					System.out.println("You selected song with songID: " + selectedsongs[i]);
+
+					// iterate through SongBeans in global variable, songs
+					for (SongBean song : songs) {
+						// selected song is added to cart using songID to match with SongBean's songID & break out of for loop
+						if (song.getSongID().matches(selectedsongs[i])) {
+							cart.addSong(song);
+							total += song.getPrice();
+							System.out.println("Added the following song to cart: " + song.getTitle());
+							// assign string value of albumID for this selected song to songAlbumID
+							String songAlbumID = song.getAlbumID();
+							for (AlbumBean album : albums) {
+								if (album.getID().matches(songAlbumID)) {
+									cartAlbumDetailsForSongs.add(album);
+									System.out.println("This song is from the album: " + album.getTitle());
+									break;
+								}
+							}
+							break;
+						}
+						
+					} // end of for loop to find selected song in global variable, songs
+
+				}
+				System.out.println("Finished iterating through the selected songs.");
+				System.out.println("You added " + selectedsongs.length + " song(s) to your cart and have a total of " + cart.getSongs().size() + " song(s) in your cart now!");
+				
+				}
+				
+				session.setAttribute("shopping", cart);
+				session.setAttribute("albumBeanBean", cart.getAlbums());
+				session.setAttribute("songBeanBean", cart.getSongs());
+				session.setAttribute("songAlbumBean", cartAlbumDetailsForSongs);
+				session.setAttribute("total", total);
+
+				RequestDispatcher requestdispatcher = request.getRequestDispatcher("/cart.jsp");
+				requestdispatcher.forward(request, response);
 			}
-
-			System.out.println("You added " + selected.length + " songs to your cart and have a total of "
-					+ cart.getSongs().size() + " songs in your cart now!");
-			System.out.println("Songs in cart now: " + cart.getSongsSize());
-
-			HttpSession session = request.getSession(true);
-			session.setAttribute("shopping", cart);
-
-			request.setAttribute("songBeanBean", cart.getSongs());
-			request.setAttribute("albumBeanBean", cart.getAlbums());
-
-			RequestDispatcher requestdispatcher = request.getRequestDispatcher("/cart.jsp");
-			requestdispatcher.forward(request, response);
 
 		}
 

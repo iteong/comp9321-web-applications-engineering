@@ -36,7 +36,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>go! Music - Shopping Cart</title>
+<title>go! Music - Checkout</title>
 <style type="text/css">
 <!-- CSS styles for standard search box -->
 	.backtosearchbutton {
@@ -176,7 +176,7 @@
 
 <body>
 
-<H2 style="font-family: verdana; color: #1B7FC3;" align="center">Shopping Cart</H2>
+<H2 style="font-family: verdana; color: #1B7FC3;" align="center">Checkout</H2>
 	
 	<!-- Message about whether the shopping cart is empty or not -->
 	<c:choose>
@@ -214,9 +214,6 @@
 	   		<th>
 	   			Price
 	   		</th>
-	   		<th>
-	   			Select
-	   		</th>
 	   	</tr>
 	   	
 	   	<c:forEach var="song" items="${songBeanBean}">
@@ -236,9 +233,6 @@
 	   		</td>
 	   		<td>
 	   			${song.price}
-	   		</td>
-	   		<td>
-	   			<input type="checkbox" name="checkbox-cart-songs" />&nbsp;
 	   		</td>
 	   	</tr>			
 	   	</c:forEach></c:forEach>
@@ -270,9 +264,6 @@
 	   		<th>
 	   			Price
 	   		</th>
-	   		<th>
-	   			Select
-	   		</th>
 	   	</tr>
 	   	
 	   	<c:forEach var="album" items="${albumBeanBean}">
@@ -292,15 +283,24 @@
 	   		<td>
 	   			${album.price}
 	   		</td>
-	   		<td>
-	   			<input type="checkbox" name="checkbox-cart-albums" />&nbsp;
-	   		</td>
 	   	</tr>			
 	   	</c:forEach>
 	
 	   </table>
 	</div>
 </c:if>
+
+<h2>Do you want to checkout?</h2>
+<tr>
+	<th colspan="3">			              	
+		<input type="submit" name ="actioncheckout" value="YES" onclick="alert('Thank you for purchasing!')" />
+		<input type="hidden" name="confirmcheckout" value="yes"></input>								 									  			                	
+	</th>
+	<th colspan="3">			              		
+		<input type="submit" name ="actioncheckout" value="NO" onclick="alert('Thank you for window shopping!')" />
+		<input type="hidden" name="confirmcheckout" value="no"></input>										 									  			                	
+	</th>
+</tr>
 
 <p></p>
 
@@ -318,19 +318,6 @@
         			location.href = "search";
     			};
 			</script>
-		</c:when>
-		<c:when test="<%= songbean.size() >= 1 || albumbean.size() >= 1 %>">
-			<div align="center">			
-				<form method="post" action="search">
-					<input type="image" name="removebutton" src="./remove-cart.png"></input>
-					<input type="hidden" name="action" value="remove"></input>
-				</form>
-			
-				<form method="post" action="search">
-					<input type="image" name="checkoutbutton" src="./secure-checkout.png" name ="action" value="Checkout" ></input>
-					<input type="hidden" name="action" value="checkout"></input>
-				</form>
-			</div>
 		</c:when>
 	</c:choose>
 

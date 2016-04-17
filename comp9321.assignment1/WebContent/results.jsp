@@ -329,7 +329,7 @@
 			   			${album.price}
 			   		</td>
 			   		<td>
-			   			<input type="checkbox" name="checkbox-anything-albums" />&nbsp;
+			   			<input type="checkbox" name="checkbox-anything-albums" value="${album.ID}"/>&nbsp;
 			   		</td>
 			   	</tr>			
 			   	</c:forEach>
@@ -414,7 +414,7 @@
 			   			${song.price}
 			   		</td>
 			   		<td>
-			   			<input type="checkbox" name="checkbox-artist-songs" />&nbsp;
+			   			<input type="checkbox" name="checkbox-artist-songs" value="${song.songID}"/>&nbsp;
 			   		</td>
 			   	</tr>			
 			   	</c:forEach></c:forEach>
@@ -470,7 +470,7 @@
 			   			${album.price}
 			   		</td>
 			   		<td>
-			   			<input type="checkbox" name="checkbox-artist-albums" />&nbsp;
+			   			<input type="checkbox" name="checkbox-artist-albums" value="${album.ID}"/>&nbsp;
 			   		</td>
 			   	</tr>			
 			   	</c:forEach>
@@ -557,7 +557,7 @@
 			   			${song.price}
 			   		</td>
 			   		<td>
-			   			<input type="checkbox" name="checkbox-songs-songs" />&nbsp;
+			   			<input type="checkbox" name="checkbox-songs-songs" value="${song.songID}"/>&nbsp;
 			   		</td>
 			   	</tr>			
 			   	</c:forEach>
@@ -621,7 +621,7 @@
 			   			${album.price}
 			   		</td>
 			   		<td>
-			   			<input type="checkbox" name="checkbox-album-albums" />&nbsp;
+			   			<input type="checkbox" name="checkbox-album-albums" value="${album.ID}"/>&nbsp;
 			   		</td>
 			   	</tr>			
 			   	</c:forEach>
